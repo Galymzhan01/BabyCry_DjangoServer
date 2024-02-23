@@ -66,7 +66,9 @@ binary_clf = joblib.load('binary_classifier.pkl')
 #         form = AudioRecordingForm()
 
 #     return render(request, 'main_page.html', {'form': form})
-
+def main_simple(request):
+    return render(request, 'main_simple.html')
+            
 # def main_page(request):
 #     if request.method == 'POST':
 #         form = AudioRecordingForm(request.POST, request.FILES)
