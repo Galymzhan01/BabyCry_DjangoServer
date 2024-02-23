@@ -7,7 +7,7 @@
 # from django.core.files import File
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-
+import os
 # from .forms import AudioRecordingForm
 # from .models import AudioRecording
 import joblib
@@ -34,7 +34,7 @@ import librosa
 
 # Load the KNN model
 # knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
-binary_clf = joblib.load('/binary_classifier.pkl')
+binary_clf = joblib.load(os.path.abspath('binary_classifier.pkl'))
 # dnn_clf = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/dnn.pkl')
 # dnn_clf.eval()
 # conf = Conf()
