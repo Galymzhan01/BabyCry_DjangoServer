@@ -19,7 +19,7 @@ from django.urls import path
 from core import views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', views.main_page, name='main_page'),
+    path('', views.main_simple, name='main_simple'),
     # path('<int:pk>/result', views.result_page, name='result_page'),
     path('api/flutter-upload/', views.audio_upload_from_flutter, name='flutter_upload'), 
 ]
