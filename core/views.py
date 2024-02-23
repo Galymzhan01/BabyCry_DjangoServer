@@ -34,7 +34,7 @@ import librosa
 
 # Load the KNN model
 # knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
-binary_clf = joblib.load("static/binary_classifier.pkl")
+binary_clf = joblib.load("core/models/binary_classifier.pkl")
 # dnn_clf = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/dnn.pkl')
 # dnn_clf.eval()
 # conf = Conf()
