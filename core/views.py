@@ -6,6 +6,7 @@
 # from django.core.files.base import ContentFile
 # from django.core.files import File
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 import os
 # from .forms import AudioRecordingForm
@@ -66,8 +67,10 @@ binary_clf = joblib.load("core/models/binary_classifier.pkl")
 #         form = AudioRecordingForm()
 
 #     return render(request, 'main_page.html', {'form': form})
+@ensure_csrf_cookie
 def main_simple(request):
-    return render(request, 'main_simple.html')
+    if request.method == 'GET': 
+        return render(request, 'main_simple.html')
             
 # def main_page(request):
 #     if request.method == 'POST':
@@ -128,7 +131,6 @@ def main_simple(request):
 #         form = AudioRecordingForm()
 
 #     return render(request, 'main_page.html', {'form': form})
-
 
 def audio_upload_from_flutter(request):
     if request.method == 'POST':
