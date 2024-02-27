@@ -133,6 +133,7 @@ def main_simple(request):
 #     return render(request, 'main_page.html', {'form': form})
 
 def audio_upload_from_flutter(request):
+    logging.debug(f"Incoming Headers: {request.META}")
     if request.method == 'POST':
         audio_file = request.FILES['file'] 
 
