@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'core',
     #'rest_framework',
 ]
-
+CSRF_TRUSTED_ORIGINS = ["https://babycry-production.up.railway.app/"]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
