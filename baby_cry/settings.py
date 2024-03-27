@@ -25,7 +25,7 @@ SECRET_KEY = '&5)#6(1%z9a%o*zj=@@)j6!mr4m=b2qq^huqvl!tji80)-xjhs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['babycry-production.up.railway.app']
+ALLOWED_HOSTS = ['babycry-production.up.railway.app', '*']
 
 
 # Application definition
@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
-    #'rest_framework',
+    'core.apps.CoreConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

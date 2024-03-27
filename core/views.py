@@ -1,22 +1,25 @@
 # views.py
 
-# import io, os
+import io, os
 # import requests
 # from pydub import AudioSegment
 # from django.core.files.base import ContentFile
 # from django.core.files import File
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-import os
-# from .forms import AudioRecordingForm
-# from .models import AudioRecording
+from rest_framework.decorators import api_view
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework.response import Response
+# from django.http import JsonResponse
 import joblib
 import numpy as np
 import librosa
+# from .forms import AudioRecordingForm
+# from .models import AudioRecording
+
 # import tempfile
-# import matplotlib
-# import matplotlib.pyplot as plt
-# from PIL import Image
+import matplotlib
+import matplotlib.pyplot as plt
+from PIL import Image
 # import torch.nn as nn
 # import torch
 # import torchvision.transforms as transforms
@@ -33,11 +36,41 @@ import librosa
 #   samples = sampling_rate * duration
 
 # Load the KNN model
-# knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
+knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
 binary_clf = joblib.load("core/models/binary_classifier.pkl")
-# dnn_clf = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/dnn.pkl')
+# dnn_clf = torch.load('core/models/dnn1.pkl', map_location=torch.device('cpu'))
 # dnn_clf.eval()
 # conf = Conf()
+@ensure_csrf_cookie
+def main_simple(request):
+    return render(request, 'main_simple.html')
+
+@api_view(['POST'])
+def audio_upload_from_flutter(request):
+    if request.method == 'POST':
+        audio_file = request.FILES['file'] 
+        temp_file_path = 'temporary_audio.wav'
+
+        with open(temp_file_path, 'wb+') as destination: 
+            for chunk in audio_file.chunks():
+                destination.write(chunk)
+        # Feature Extraction
+        features = features_extractor_binary(temp_file_path)  
+        features = features.reshape(1, -1)
+        # Prediction from your KNN Model (Let me know if you need help with this part)
+        isBaby = binary_clf.predict(features)[0] 
+        # Return prediction as JSON
+        if isBaby == 'NotBC_training':
+          os.remove(temp_file_path)
+          return Response({'prediction': isBaby}) 
+        else: 
+            prediction = classify_audio(temp_file_path)[0]
+            os.remove(temp_file_path)
+            return Response({'prediction': prediction}) 
+            
+    else:
+        return redirect('main_simple')  # Redirect to main page if not a POST request
+
 # def main_page(request):
 #     if request.method == 'POST':
 #         print("accepted a sound!")
@@ -66,91 +99,6 @@ binary_clf = joblib.load("core/models/binary_classifier.pkl")
 #         form = AudioRecordingForm()
 
 #     return render(request, 'main_page.html', {'form': form})
-def main_simple(request):
-    return render(request, 'main_simple.html')
-            
-# def main_page(request):
-#     if request.method == 'POST':
-#         form = AudioRecordingForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             # Assuming 'audio_file' is the name of the file field in your form
-#             audio_file = request.FILES['audio_file']
-#             audio_recording = form.save(commit=False)
-#             audio_recording.audio_file = audio_file
-            
-#             with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
-#                 for chunk in audio_file.chunks():
-#                     tmp.write(chunk)
-
-#                 # Get the path of the saved temporary file
-#                 temp_file_path = tmp.name
-
-#             # Process the audio file as needed, then save
-#             features = features_extractor_binary(temp_file_path)
-#             features = features.reshape(1, -1)
-
-#             isBaby = binary_clf.predict(features)[0]
-#             if isBaby == 'NotBC_training':
-#                 audio_recording.classification_result = 'NotBC_training'
-#                 audio_recording.save()
-#             else: 
-#                 print(isBaby)
-#                 # transformed_sound = read_audio(temp_file_path, True)
-#                 # mel_img = audio_to_melspectrogram(transformed_sound)
-#                 save_image_from_sound(temp_file_path, audio_recording)
-#                 predictions = ["hungry", "burping", "discomfort", "belly_pain", "tired"]
-
-#                 img = Image.open(audio_recording.image_file).convert('RGB')
-#                 img_tensor = preprocess_image_for_dnn(img) 
-
-#                 # Inference with DNN
-#                 output = dnn_clf(img_tensor)  
-#                 prob = nn.functional.softmax(output, dim=1)
-#                 _, predicted = torch.max(output, 1)  
-
-#                 # Save classified result (assuming 'predicted' is a tensor)
-#                 audio_recording.classification_result = predictions[predicted.item()] 
-#                 audio_recording.save()
-
-
-#                 #classification_result = "hungry"
-#                 # audio_recording.classification_result = classification_result[0]
-#                 # audio_recording.classification_result = predicted  # Store as text based on classes 
-#                 # audio_recording.save()
-
-#             os.remove(temp_file_path)
-#             # Add classification logic as needed
-            
-#             return redirect('result_page', pk=audio_recording.pk)
-#         else:
-#             print("Form errors:", form.errors)
-#     else:
-#         form = AudioRecordingForm()
-
-#     return render(request, 'main_page.html', {'form': form})
-
-
-def audio_upload_from_flutter(request):
-    if request.method == 'POST':
-        audio_file = request.FILES['file'] 
-
-        # Feature Extraction
-        features = features_extractor_binary(audio_file)  
-
-        # Prediction from your KNN Model (Let me know if you need help with this part)
-        isBaby = binary_clf.predict(features)[0] 
-
-        # Return prediction as JSON
-        return JsonResponse({'prediction': isBaby}) 
-    else:
-        return redirect('main_page')  # Redirect to main page if not a POST request
-
-
-# def result_page(request, pk):
-#     audio_recording = get_object_or_404(AudioRecording, pk=pk)
-#     # You can pass the classification result to the template
-#     return render(request, 'result_page.html', {'audio_recording': audio_recording})
-
 # def fetch_audio_data(audio_data_url):
 #     response = requests.get(audio_data_url)
 #     return response.content
@@ -161,21 +109,26 @@ def audio_upload_from_flutter(request):
 #     audio.export(wav_data, format='wav')
 #     return ContentFile(wav_data.getvalue(), 'audio.wav')
 
-# def classify_audio(audio_path):
-#     features = extract_features(audio_path)
-#     # prediction = knn_model.predict(features.reshape(1, -1))
-#     prediction = knn_model.predict(features.reshape(1, -1))
-#     return prediction
+def classify_audio(audio_path):
+    features = extract_features(audio_path)
+    # prediction = knn_model.predict(features.reshape(1, -1))
+    prediction = knn_model.predict(features.reshape(1, -1))
+    return prediction
 
-# def extract_features(audio_path):
-#     audio, sample_rate = librosa.load(audio_path, res_type='kaiser_fast')
-#     mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
-#     mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
+def extract_features(audio_path):
+    audio, sample_rate = librosa.load(audio_path, res_type='kaiser_fast')
+    mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+    mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
 
-#     print(mfccs_scaled_features.shape)
-#     return mfccs_scaled_features
+    # print(mfccs_scaled_features.shape)
+    return mfccs_scaled_features
+
+
+
+
 
 def features_extractor_binary(file_name):
+    print(f"Librosa is being loaded from {librosa.__file__}")
     audio, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
     mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
     mfccs_scaled_features = np.mean(mfccs_features.T,axis=0)
@@ -245,3 +198,72 @@ def features_extractor_binary(file_name):
 #     img_tensor = transform(img) 
 #     img_tensor = img_tensor.unsqueeze(0)  # Add the batch dimension
 #     return img_tensor
+
+
+
+
+# def result_page(request, pk):
+#     audio_recording = get_object_or_404(AudioRecording, pk=pk)
+#     # You can pass the classification result to the template
+#     return render(request, 'result_page.html', {'audio_recording': audio_recording})
+
+            
+# def main_page(request):
+#     if request.method == 'POST':
+#         form = AudioRecordingForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             # Assuming 'audio_file' is the name of the file field in your form
+#             audio_file = request.FILES['audio_file']
+#             audio_recording = form.save(commit=False)
+#             audio_recording.audio_file = audio_file
+            
+#             with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
+#                 for chunk in audio_file.chunks():
+#                     tmp.write(chunk)
+
+#                 # Get the path of the saved temporary file
+#                 temp_file_path = tmp.name
+
+#             # Process the audio file as needed, then save
+#             features = features_extractor_binary(temp_file_path)
+#             features = features.reshape(1, -1)
+
+#             isBaby = binary_clf.predict(features)[0]
+#             if isBaby == 'NotBC_training':
+#                 audio_recording.classification_result = 'NotBC_training'
+#                 audio_recording.save()
+#             else: 
+#                 print(isBaby)
+#                 # transformed_sound = read_audio(temp_file_path, True)
+#                 # mel_img = audio_to_melspectrogram(transformed_sound)
+#                 save_image_from_sound(temp_file_path, audio_recording)
+#                 predictions = ["hungry", "burping", "discomfort", "belly_pain", "tired"]
+
+#                 img = Image.open(audio_recording.image_file).convert('RGB')
+#                 img_tensor = preprocess_image_for_dnn(img) 
+
+#                 # Inference with DNN
+#                 output = dnn_clf(img_tensor)  
+#                 prob = nn.functional.softmax(output, dim=1)
+#                 _, predicted = torch.max(output, 1)  
+
+#                 # Save classified result (assuming 'predicted' is a tensor)
+#                 audio_recording.classification_result = predictions[predicted.item()] 
+#                 audio_recording.save()
+
+
+#                 #classification_result = "hungry"
+#                 # audio_recording.classification_result = classification_result[0]
+#                 # audio_recording.classification_result = predicted  # Store as text based on classes 
+#                 # audio_recording.save()
+
+#             os.remove(temp_file_path)
+#             # Add classification logic as needed
+            
+#             return redirect('result_page', pk=audio_recording.pk)
+#         else:
+#             print("Form errors:", form.errors)
+#     else:
+#         form = AudioRecordingForm()
+
+#     return render(request, 'main_page.html', {'form': form})
