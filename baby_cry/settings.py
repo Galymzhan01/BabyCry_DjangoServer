@@ -25,7 +25,7 @@ SECRET_KEY = '&5)#6(1%z9a%o*zj=@@)j6!mr4m=b2qq^huqvl!tji80)-xjhs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['babycry-production.up.railway.app', '*']
+ALLOWED_HOSTS = ['babycry-production.up.railway.app', '34.168.30.222', '*']
 
 
 # Application definition
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 ]
-
+CSRF_TRUSTED_ORIGINS = ["https://babycry-production.up.railway.app/"]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware', 
