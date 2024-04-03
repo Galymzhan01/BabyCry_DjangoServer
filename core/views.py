@@ -36,7 +36,8 @@ import librosa
 #   samples = sampling_rate * duration
 
 # Load the KNN model
-knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
+# knn_model = joblib.load('/Users/galymzan/Downloads/cs409/baby-cry-main/core/load_KNN.pkl')
+knn_model = joblib.load('core/models/load_KNN.pkl')
 binary_clf = joblib.load("core/models/binary_classifier.pkl")
 # dnn_clf = torch.load('core/models/dnn1.pkl', map_location=torch.device('cpu'))
 # dnn_clf.eval()
