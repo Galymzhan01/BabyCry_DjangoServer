@@ -18,3 +18,5 @@ env/
 .env
 
 /staticfiles/
+core/views copy.py
+requirements copy.txt

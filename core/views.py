@@ -17,7 +17,7 @@ import pandas as pd
 
 
 knn_model = joblib.load('core/models/best_model.pkl')
-binary_clf = joblib.load("core/models/binary_classifier_new.pkl")
+binary_clf = joblib.load("core/models/binary_classifier.pkl")
 
 
 
